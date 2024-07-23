@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+
 
 class SearchProblem:
     """
@@ -70,7 +71,8 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -87,17 +89,78 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Na busca em profundidade viajamos "de galho em galho", navegando até um nó folha antes de seguir para o proximo
+    # Para isso usamos uma Fila (First in first out)
+    no = util.Queue()
+
+    nos_visitados = []
+    # Faremos uma lista de ações para registrar a direção seguida
+    lista_de_acoes = []
+    # Place the starting point in the stack
+    no.push((problem.getStartState(), lista_de_acoes))
+    while no:
+        no, direcao = no.pop()
+        if not no in nos_visitados:
+            nos_visitados.append(no)
+            if problem.isGoalState(no):
+                return direcao
+            for successor in problem.getSuccessors(no):
+                coordinate, direction, cost = successor
+                nextActions = direcao + [direction]
+                no.push((coordinate, nextActions))
+    return []
+    # util.raiseNotDefined()
+
 
 def breadthFirstSearch(problem):
+    # Na busca em largura navegamos por todos os nós de um mesmo nível antes de seguir para o proximo
+    # Raiz - direita - esquerda, ou seja, lendo a árvore em Pilha
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    no = util.Stack()
+
+    nos_visitados = []
+    # Faremos uma lista de ações para registrar a direção seguida
+    lista_de_acoes = []
+    # Place the starting point in the stack
+    no.push((problem.getStartState(), lista_de_acoes))
+    while no:
+        no, direcao = no.pop()
+        if not no in nos_visitados:
+            nos_visitados.append(no)
+            if problem.isGoalState(no):
+                return direcao
+            for successor in problem.getSuccessors(no):
+                coordinate, direction, cost = successor
+                nextActions = direcao + [direction]
+                no.push((coordinate, nextActions))
+    return []
+    # util.raiseNotDefined()
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Na busca por custo uniforme utilizamos a soma dos custos de veiagem até cada nó em nossa estimativa
+    # Para isso utilizamos uma fila com prioridade e damos prioridade a quem tiver o menor custo
+    no = util.PriorityQueue()
+    nos_visitados = []
+    lista_de_acoes = []
+    no.push((problem.getStartState(), lista_de_acoes), problem)
+    while no:
+        node, acoes = no.pop()
+        if not node in nos_visitados:
+            nos_visitados.append(node)
+            if problem.isGoalState(node):
+                return acoes
+            for successor in problem.getSuccessors(node):
+                coordinate, direction, cost = successor
+                nextActions = acoes + [direction]
+                nextCost = problem.getCostOfActions(nextActions)
+                no.push((coordinate, nextActions), nextCost)
+    return []
+    # util.raiseNotDefined()
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -106,10 +169,33 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Use a priority queue, so the cost of actions is calculated with a provided heuristic
+    no = util.PriorityQueue()
+    # Make an empty list of explored nodes
+    nos_visitados = []
+    # Make an empty list of actions
+    lista_de_acoes = []
+    # Place the starting point in the priority queue
+    no.push((problem.getStartState(), lista_de_acoes),
+            heuristic(problem.getStartState(), problem))
+    while no:
+        node, acoes = no.pop()
+        if not node in nos_visitados:
+            nos_visitados.append(node)
+            if problem.isGoalState(node):
+                return acoes
+            for successor in problem.getSuccessors(node):
+                coordinate, direction, cost = successor
+                nextActions = acoes + [direction]
+                nextCost = problem.getCostOfActions(nextActions) + \
+                    heuristic(coordinate, problem)
+                no.push((coordinate, nextActions), nextCost)
+    return []
+    # util.raiseNotDefined()
 
 
 # Abbreviations
